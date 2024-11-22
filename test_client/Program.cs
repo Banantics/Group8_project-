@@ -10,6 +10,7 @@ namespace Client
         {
             var client = new MqttClientWrapper();
             await client.ConnectAndRunAsync();
+            
         }
     }
 }

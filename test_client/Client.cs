@@ -25,7 +25,7 @@ namespace Client
             _broker = "eu1.cloud.thethings.network";
             _port = 8883;
             _clientId = Guid.NewGuid().ToString();
-            _topic = "v3/project-software-engineering@ttn/devices";
+            _topic = "v3/project-software-engineering@ttn/devices/+/up";
             _username = "project-software-engineering@ttn";
             _password = "NNSXS.DTT4HTNBXEQDZ4QYU6SG73Q2OXCERCZ6574RVXI.CQE6IG6FYNJOO2MOFMXZVWZE4GXTCC2YXNQNFDLQL4APZMWU6ZGA";
 
@@ -56,38 +56,42 @@ namespace Client
                 Console.WriteLine("Connected to MQTT broker successfully.");
 
                 // Subscribe to the topic
-                await _mqttClient.SubscribeAsync(_topic, MqttQualityOfServiceLevel.AtMostOnce);
+                await _mqttClient.SubscribeAsync(_topic);
                 Console.WriteLine($"Subscribed to topic: {_topic}");
 
-                // Handle incoming messages
+                // Handle incoming message
                 _mqttClient.ApplicationMessageReceivedAsync += async e =>
                 {
+                     Console.WriteLine("Message received from broker!");
                     try
                     {
+                        
                         // Convert the payload to string
                         string payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
                         Console.WriteLine($"Received raw message: {payload}");
 
-                        // Parse JSON message
+                       
                         var jsonDocument = JsonDocument.Parse(payload);
-
-                        // Extract specific data from the JSON (example: "message" field)
-                        if (jsonDocument.RootElement.TryGetProperty("message", out var messageElement))
+                        var getter = new valuegetter();
+                        var weatherdata = getter.SomeTable(jsonDocument);
+                        if (weatherdata != null)
                         {
-                            string extractedMessage = messageElement.GetString();
-                            Console.WriteLine($"Extracted message: {extractedMessage}");
+                           
+                            var helper = new databaseHelper();
+                            helper.insert(weatherdata);
                         }
                         else
                         {
-                            Console.WriteLine("Message does not contain a 'message' field.");
+                            Console.WriteLine("failed to parse.");
                         }
+                        
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error processing message: {ex.Message}");
                     }
 
-                    await Task.CompletedTask; // Required by the event handler
+                    await Task.CompletedTask; 
                 };
 
                 Console.WriteLine("Press any key to exit...");
@@ -104,3 +108,4 @@ namespace Client
         }
     }
 }
+
