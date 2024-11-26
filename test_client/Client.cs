@@ -41,7 +41,7 @@ namespace Client
                 .WithTls(
                     o =>
                     {
-                        o.CertificateValidationHandler = _ => true; // For simplicity, accept all certificates
+                        o.CertificateValidationHandler = _ => true;
                         o.SslProtocol = SslProtocols.Tls12;
                     })
                 .Build();
@@ -56,18 +56,18 @@ namespace Client
             {
                 Console.WriteLine("Connected to MQTT broker successfully.");
 
-                // Subscribe to the topic
+                
                 await _mqttClient.SubscribeAsync(_topic);
                 Console.WriteLine($"Subscribed to topic: {_topic}");
 
-                // Handle incoming message
+                
                 _mqttClient.ApplicationMessageReceivedAsync += async e =>
                 {
                      Console.WriteLine("Message received from broker!");
                     try
                     {
                         
-                        // Convert the payload to string
+                        
                         string payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
                         Console.WriteLine($"Received raw message: {payload}");
 
