@@ -6,6 +6,7 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
 using System.Security.Authentication;
+using vals;
 
 
 namespace Client
@@ -74,8 +75,23 @@ namespace Client
                        
                         var jsonDocument = JsonDocument.Parse(payload);
                         var getter = new valuegetter();
-                        var weatherdata = getter.SomeTable(jsonDocument);
-                        var deviceid = getter.tableidentifier(jsonDocument);
+                        var deviceid = getter.TableIdentifier(jsonDocument);
+                        vals.values weatherdata = null;
+                        if (deviceid.Contains("mkr", StringComparison.OrdinalIgnoreCase))
+                        {
+                            weatherdata = getter.table(jsonDocument , "mkr");
+                            
+                        }
+                        else if (deviceid.Contains("lht", StringComparison.OrdinalIgnoreCase))
+                        {
+                            weatherdata = getter.table(jsonDocument , "lht");
+                           
+                        }
+                        else
+                        {
+                            Console.WriteLine($"unknown id: {deviceid}.");
+                        }
+                       
                         Console.WriteLine(deviceid);
                         if (weatherdata != null)
                         {
