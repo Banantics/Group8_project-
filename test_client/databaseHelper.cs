@@ -82,7 +82,8 @@ namespace Client
                             command.Parameters.AddWithValue("@BatteryStatus", weatherData.BatteryStatus);
                             command.Parameters.AddWithValue("@Illumination", weatherData.Illumination ?? (object)DBNull.Value);
 
-                            command.Parameters.AddWithValue("@WorkMode", weatherData.WorkMode);
+                            command.Parameters.AddWithValue("@WorkMode", string.IsNullOrEmpty(weatherData.WorkMode) ? (object)DBNull.Value : weatherData.WorkMode);
+
                             command.Parameters.AddWithValue("@Humidity", weatherData.Humidity);
                             command.Parameters.AddWithValue("@Temperature", weatherData.Temperature);
                             command.ExecuteNonQuery();
