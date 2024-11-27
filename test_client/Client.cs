@@ -67,8 +67,6 @@ namespace Client
                      Console.WriteLine("Message received from broker!");
                     try
                     {
-                        
-                        
                         string payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
                         Console.WriteLine($"Received raw message: {payload}");
 

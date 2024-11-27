@@ -1,76 +1,86 @@
 using System;
+using System.Reflection.Metadata;
 using System.Text.Json;
 
 public class valuegetter
 {
+    ///is empty cause im lazy
+    private vals.values _weatherData = new vals.values();
     public vals.values table(JsonDocument document, string deviceType)
     {
         try
         {
-            var weatherData = new vals.values
-            {
-                DeviceId = TryGetString(document, "end_device_ids", "device_id"),
-                Application = TryGetString(document, "end_device_ids", "application_ids", "application_id"),
-                DevEUI = TryGetString(document, "end_device_ids", "dev_eui"),
-                JoinEUI = TryGetString(document, "end_device_ids", "join_eui"),
-                DevAddress = TryGetString(document, "end_device_ids", "dev_addr"),
-                SessionKeyId = TryGetString(document, "uplink_message", "session_key_id"),
-                FPort = TryGetInt32(document, "uplink_message", "f_port"),
-                FCnt = TryGetInt32(document, "uplink_message", "f_cnt"),
-                FrmPayload = TryGetString(document, "uplink_message", "frm_payload"),
-                Timestamp = TryGetDateTime(document, "uplink_message", "settings", "time"),
-                GatewayId = TryGetString(document, "uplink_message", "rx_metadata", 0, "gateway_ids", "gateway_id"),
-                GatewayEUI = TryGetString(document, "uplink_message", "rx_metadata", 0, "gateway_ids", "eui"),
-                MetadataTime = TryGetDateTime(document, "uplink_message", "rx_metadata", 0, "time"),
-                MetadataTimestamp = TryGetInt64(document, "uplink_message", "rx_metadata", 0, "timestamp"),
-                RSSI = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "rssi"),
-                ChannelRSSI = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "channel_rssi"),
-                SNR = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "snr"),
-                Latitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "latitude"),
-                Longitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "longitude"),
-                Altitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "altitude")
-            };
+            get_common_values(document);
 
             if (deviceType.Equals("mkr", StringComparison.OrdinalIgnoreCase))
             {
-                weatherData.Humidity = GetJsonValue(document, "uplink_message", "decoded_payload", "humidity");
-                weatherData.Pressure = GetJsonValue(document, "uplink_message", "decoded_payload", "pressure");
-                weatherData.Temperature = GetJsonValue(document, "uplink_message", "decoded_payload", "temperature");
-                weatherData.Illumination = GetJsonValue(document, "uplink_message", "decoded_payload", "light");
+                _weatherData.Humidity = GetJsonValue(document, "uplink_message", "decoded_payload", "humidity");
+                _weatherData.Pressure = GetJsonValue(document, "uplink_message", "decoded_payload", "pressure");
+                _weatherData.Temperature = GetJsonValue(document, "uplink_message", "decoded_payload", "temperature");
+                _weatherData.Illumination = GetJsonValue(document, "uplink_message", "decoded_payload", "light");
             }
             else if (deviceType.Equals("lht", StringComparison.OrdinalIgnoreCase))
             {
-                weatherData.Humidity = GetJsonValue(document, "uplink_message", "decoded_payload", "Hum_SHT");
-                weatherData.Pressure = null; 
-                weatherData.Temperature = GetJsonValue(document, "uplink_message", "decoded_payload", "TempC_SHT");
-                weatherData.BatteryVoltage = GetJsonValue(document, "uplink_message", "decoded_payload", "BatV");
-                weatherData.BatteryStatus = TryGetInt32(document, "uplink_message", "decoded_payload", "Bat_status");
-                weatherData.WorkMode = TryGetString(document, "uplink_message", "decoded_payload", "Work_mode");
-                weatherData.TempC_DS = GetJsonValue(document, "uplink_message", "decoded_payload", "TempC_DS");
-                weatherData.Illumination = GetJsonValue(document, "uplink_message", "decoded_payload", "ILL_lx");
+                _weatherData.Humidity = GetJsonValue(document, "uplink_message", "decoded_payload", "Hum_SHT");
+                //_weatherData.Pressure = null;
+                _weatherData.Temperature = GetJsonValue(document, "uplink_message", "decoded_payload", "TempC_SHT");
+                _weatherData.BatteryVoltage = GetJsonValue(document, "uplink_message", "decoded_payload", "BatV");
+                _weatherData.BatteryStatus = TryGetInt32(document, "uplink_message", "decoded_payload", "Bat_status");
+                _weatherData.WorkMode = TryGetString(document, "uplink_message", "decoded_payload", "Work_mode");
+                _weatherData.TempC_DS = GetJsonValue(document, "uplink_message", "decoded_payload", "TempC_DS");
+                _weatherData.Illumination = GetJsonValue(document, "uplink_message", "decoded_payload", "ILL_lx");
             }
             else
             {
                 throw new Exception($"Unknown device type: {deviceType}");
             }
 
-            if (string.IsNullOrEmpty(weatherData.GatewayEUI))
+            if (string.IsNullOrEmpty(_weatherData.GatewayEUI))
             {
-                Console.WriteLine($"Warning: GatewayEUI is missing for device {weatherData.DeviceId}");
+                Console.WriteLine($"Warning: GatewayEUI is missing for device {_weatherData.DeviceId}");
+                _weatherData.GatewayEUI = "n/a";
             }
 
-            if (weatherData.Illumination == null)
+            if (_weatherData.Illumination == null)
             {
-                Console.WriteLine($"Warning: Illumination is missing or not parsed for device {weatherData.DeviceId}");
+                Console.WriteLine($"Warning: Illumination is missing or not parsed for device {_weatherData.DeviceId}");
             }
 
-            return weatherData;
+            return  _weatherData;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error parsing document for {deviceType} device: {ex.Message}");
             return null;
         }
+    }
+
+
+    public void get_common_values(JsonDocument document)
+    {
+        _weatherData = new vals.values
+        {
+            DeviceId = TryGetString(document, "end_device_ids", "device_id"),
+            Application = TryGetString(document, "end_device_ids", "application_ids", "application_id"),
+            DevEUI = TryGetString(document, "end_device_ids", "dev_eui"),
+            JoinEUI = TryGetString(document, "end_device_ids", "join_eui"),
+            DevAddress = TryGetString(document, "end_device_ids", "dev_addr"),
+            SessionKeyId = TryGetString(document, "uplink_message", "session_key_id"),
+            FPort = TryGetInt32(document, "uplink_message", "f_port"),
+            FCnt = TryGetInt32(document, "uplink_message", "f_cnt"),
+            FrmPayload = TryGetString(document, "uplink_message", "frm_payload"),
+            Timestamp = TryGetDateTime(document, "uplink_message", "settings", "time"),
+            GatewayId = TryGetString(document, "uplink_message", "rx_metadata", 0, "gateway_ids", "gateway_id"),
+            GatewayEUI = TryGetString(document, "uplink_message", "rx_metadata", 0, "gateway_ids", "eui"),
+            MetadataTime = TryGetDateTime(document, "uplink_message", "rx_metadata", 0, "time"),
+            MetadataTimestamp = TryGetInt64(document, "uplink_message", "rx_metadata", 0, "timestamp"),
+            RSSI = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "rssi"),
+            ChannelRSSI = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "channel_rssi"),
+            SNR = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "snr"),
+            Latitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "latitude"),
+            Longitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "longitude"),
+            Altitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "altitude")
+        };
     }
 
     public string TableIdentifier(JsonDocument document)

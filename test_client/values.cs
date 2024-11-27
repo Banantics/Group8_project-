@@ -33,7 +33,7 @@ namespace vals
         public double? TempC_SHT { get; set; } 
 
         //  ('mkr_data' table)
-        public double? Light { get; set; } 
+        public double? Light { get; set; }
 
         // 'rx_metadata' fields
         public int MetadataId { get; set; } 
@@ -47,5 +47,11 @@ namespace vals
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public double? Altitude { get; set; }
+
+
+        // contain message_id from end_device
+        public int? m_id { get; set; }
+
+
     }
 }
