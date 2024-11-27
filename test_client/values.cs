@@ -18,6 +18,8 @@ namespace vals
         public string JoinEUI { get; set; }
         public string DevAddress { get; set; }
 
+
+
         // 'uplink_message'
         public string SessionKeyId { get; set; }
         public int FPort { get; set; }
