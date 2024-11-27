@@ -1,106 +1,192 @@
 using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.IO;
-using Newtonsoft.Json;
 using System.Text.Json;
 
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using Client;
-using vals;
-
-
-
 public class valuegetter
+{
+    public vals.values table(JsonDocument document, string deviceType)
     {
-        public values SomeTable(JsonDocument document)
+        try
         {
-            try
+            var weatherData = new vals.values
             {
-                var weatherData = new values
-                {
-                    // End_device
-                    DeviceId = document.RootElement.GetProperty("end_device_ids").GetProperty("device_id").GetString(),
-                    ApplicationId = document.RootElement.GetProperty("end_device_ids").GetProperty("application_ids").GetProperty("application_id").GetString(),
-                    DevEUI = document.RootElement.GetProperty("end_device_ids").GetProperty("dev_eui").GetString(),
-                    JoinEUI = document.RootElement.GetProperty("end_device_ids").GetProperty("join_eui").GetString(),
-                    DevAddress = document.RootElement.GetProperty("end_device_ids").GetProperty("dev_addr").GetString(),
+                DeviceId = TryGetString(document, "end_device_ids", "device_id"),
+                Application = TryGetString(document, "end_device_ids", "application_ids", "application_id"),
+                DevEUI = TryGetString(document, "end_device_ids", "dev_eui"),
+                JoinEUI = TryGetString(document, "end_device_ids", "join_eui"),
+                DevAddress = TryGetString(document, "end_device_ids", "dev_addr"),
+                SessionKeyId = TryGetString(document, "uplink_message", "session_key_id"),
+                FPort = TryGetInt32(document, "uplink_message", "f_port"),
+                FCnt = TryGetInt32(document, "uplink_message", "f_cnt"),
+                FrmPayload = TryGetString(document, "uplink_message", "frm_payload"),
+                Timestamp = TryGetDateTime(document, "uplink_message", "settings", "time"),
+                GatewayId = TryGetString(document, "uplink_message", "rx_metadata", 0, "gateway_ids", "gateway_id"),
+                GatewayEUI = TryGetString(document, "uplink_message", "rx_metadata", 0, "gateway_ids", "eui"),
+                MetadataTime = TryGetDateTime(document, "uplink_message", "rx_metadata", 0, "time"),
+                MetadataTimestamp = TryGetInt64(document, "uplink_message", "rx_metadata", 0, "timestamp"),
+                RSSI = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "rssi"),
+                ChannelRSSI = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "channel_rssi"),
+                SNR = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "snr"),
+                Latitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "latitude"),
+                Longitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "longitude"),
+                Altitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "altitude")
+            };
 
-                    // Uplink_messages 
-                    SessionKeyId = document.RootElement.GetProperty("uplink_message").GetProperty("session_key_id").GetString(),
-                    FPort = document.RootElement.GetProperty("uplink_message").GetProperty("f_port").GetInt32(),
-                    FCnt = document.RootElement.GetProperty("uplink_message").GetProperty("f_cnt").GetInt32(),
-                    FrmPayload = document.RootElement.GetProperty("uplink_message").GetProperty("frm_payload").GetString(),
-                    Humidity = GetJsonValue(document, "uplink_message", "decoded_payload", "humidity"),
-                    Light = GetJsonValue(document, "uplink_message", "decoded_payload", "light"),
-                    Pressure = GetJsonValue(document, "uplink_message", "decoded_payload", "pressure"),
-                    Temperature = GetJsonValue(document, "uplink_message", "decoded_payload", "temperature"),
-                    Timestamp = DateTime.Parse(document.RootElement.GetProperty("uplink_message").GetProperty("settings").GetProperty("time").GetString()),
-
-                    // Rx_metadata
-                    GatewayId = document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("gateway_ids").GetProperty("gateway_id").GetString(),
-                    GatewayEUI = document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("gateway_ids").GetProperty("eui").GetString(),
-                    MetadataTime = DateTime.Parse(document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("time").GetString()),
-                    MetadataTimestamp = document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("timestamp").GetInt64(),
-                    RSSI = document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("rssi").GetDouble(),
-                    ChannelRSSI = document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("channel_rssi").GetDouble(),
-                    SNR = document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("snr").GetDouble(),
-                    Latitude = document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("location").GetProperty("latitude").GetDouble(),
-                    Longitude = document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("location").GetProperty("longitude").GetDouble(),
-                    Altitude = document.RootElement.GetProperty("uplink_message").GetProperty("rx_metadata")[0].GetProperty("location").GetProperty("altitude").GetDouble(),
-
-                    // Settings 
-                    Bandwidth = document.RootElement.GetProperty("uplink_message").GetProperty("settings").GetProperty("data_rate").GetProperty("lora").GetProperty("bandwidth").GetInt32(),
-                    SpreadingFactor = document.RootElement.GetProperty("uplink_message").GetProperty("settings").GetProperty("data_rate").GetProperty("lora").GetProperty("spreading_factor").GetInt32(),
-                    CodingRate = document.RootElement.GetProperty("uplink_message").GetProperty("settings").GetProperty("data_rate").GetProperty("lora").GetProperty("coding_rate").GetString(),
-                    Frequency = document.RootElement.GetProperty("uplink_message").GetProperty("settings").GetProperty("frequency").GetString(),
-                    SettingsTimestamp = document.RootElement.GetProperty("uplink_message").GetProperty("settings").GetProperty("timestamp").GetInt64()
-                };
-
-
-                return weatherData;
-            }
-            catch (Exception ex)
+            if (deviceType.Equals("mkr", StringComparison.OrdinalIgnoreCase))
             {
-                Console.WriteLine($"Error in SomeTable: {ex.Message}");
-                return null; 
+                weatherData.Humidity = GetJsonValue(document, "uplink_message", "decoded_payload", "humidity");
+                weatherData.Pressure = GetJsonValue(document, "uplink_message", "decoded_payload", "pressure");
+                weatherData.Temperature = GetJsonValue(document, "uplink_message", "decoded_payload", "temperature");
+                weatherData.Illumination = GetJsonValue(document, "uplink_message", "decoded_payload", "light");
             }
+            else if (deviceType.Equals("lht", StringComparison.OrdinalIgnoreCase))
+            {
+                weatherData.Humidity = GetJsonValue(document, "uplink_message", "decoded_payload", "Hum_SHT");
+                weatherData.Pressure = null; 
+                weatherData.Temperature = GetJsonValue(document, "uplink_message", "decoded_payload", "TempC_SHT");
+                weatherData.BatteryVoltage = GetJsonValue(document, "uplink_message", "decoded_payload", "BatV");
+                weatherData.BatteryStatus = TryGetInt32(document, "uplink_message", "decoded_payload", "Bat_status");
+                weatherData.WorkMode = TryGetString(document, "uplink_message", "decoded_payload", "Work_mode");
+                weatherData.TempC_DS = GetJsonValue(document, "uplink_message", "decoded_payload", "TempC_DS");
+                weatherData.Illumination = GetJsonValue(document, "uplink_message", "decoded_payload", "ILL_lx");
+            }
+            else
+            {
+                throw new Exception($"Unknown device type: {deviceType}");
+            }
+
+            if (string.IsNullOrEmpty(weatherData.GatewayEUI))
+            {
+                Console.WriteLine($"Warning: GatewayEUI is missing for device {weatherData.DeviceId}");
+            }
+
+            if (weatherData.Illumination == null)
+            {
+                Console.WriteLine($"Warning: Illumination is missing or not parsed for device {weatherData.DeviceId}");
+            }
+
+            return weatherData;
         }
-    
-    
-    
-    
-        double GetJsonValue(JsonDocument jsonDocument, string parentProperty, string childProperty, string targetProperty)
+        catch (Exception ex)
         {
-            try
-            {
-
-                var parentElement = jsonDocument.RootElement.GetProperty(parentProperty);
-                var childElement = parentElement.GetProperty(childProperty);
-                return childElement.GetProperty(targetProperty).GetDouble();
-            }
-            catch (Exception ex)
-            {
-
-                Console.WriteLine($"Error extracting property {targetProperty}: {ex.Message}");
-                return 0;
-            }
-        }
-       public string tableidentifier(JsonDocument document){
-
-            try
-            {
-                string id = document.RootElement.GetProperty("end_device_ids").GetProperty("device_id").GetString();
-
-                return id;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Can not identify the table: {ex.Message}");
-                return string.Empty;
-
+            Console.WriteLine($"Error parsing document for {deviceType} device: {ex.Message}");
+            return null;
         }
     }
 
+    public string TableIdentifier(JsonDocument document)
+    {
+        try
+        {
+            return TryGetString(document, "end_device_ids", "device_id") ?? string.Empty;
+        }
+        catch
+        {   
+            return string.Empty;
+        }
+    }
+
+    private string TryGetString(JsonDocument document, params object[] keys)
+    {
+        try
+        {
+            var element = GetNestedProperty(document.RootElement, keys);
+            return element.ValueKind != JsonValueKind.Null ? element.GetString() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private int TryGetInt32(JsonDocument document, params object[] keys)
+    {
+        try
+        {
+            var element = GetNestedProperty(document.RootElement, keys);
+            return element.GetInt32();
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private long TryGetInt64(JsonDocument document, params object[] keys)
+    {
+        try
+        {
+            var element = GetNestedProperty(document.RootElement, keys);
+            return element.GetInt64();
+        }
+        catch
+        {
+            return 0L;
+        }
+    }
+
+    private double? TryGetDouble(JsonDocument document, params object[] keys)
+    {
+        try
+        {
+            var element = GetNestedProperty(document.RootElement, keys);
+            return element.ValueKind == JsonValueKind.Null ? null : element.GetDouble();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private DateTime TryGetDateTime(JsonDocument document, params object[] keys)
+    {
+        try
+        {
+            var element = GetNestedProperty(document.RootElement, keys);
+            string dateString = element.GetString();
+
+            DateTime date = DateTime.Parse(dateString);
+            return date < new DateTime(1753, 1, 1) ? new DateTime(1753, 1, 1) : date;
+        }
+        catch
+        {
+            return new DateTime(1753, 1, 1);
+        }
+    }
+
+    private JsonElement GetNestedProperty(JsonElement element, params object[] keys)
+    {
+        foreach (var key in keys)
+        {
+            if (key is int index && element.ValueKind == JsonValueKind.Array)
+            {
+                element = element[index];
+            }
+            else if (key is string propertyName && element.TryGetProperty(propertyName, out var tempElement))
+            {
+                element = tempElement;
+            }
+            else
+            {
+                throw new KeyNotFoundException($"Key '{key}' not found.");
+            }
+        }
+        return element;
+    }
+
+    private double? GetJsonValue(JsonDocument jsonDocument, string parentProperty, string childProperty, string targetProperty)
+    {
+        try
+        {
+            if (jsonDocument.RootElement.TryGetProperty(parentProperty, out var parentElement) &&
+                parentElement.TryGetProperty(childProperty, out var childElement) &&
+                childElement.TryGetProperty(targetProperty, out var targetElement))
+            {
+                return targetElement.ValueKind == JsonValueKind.Null ? null : targetElement.GetDouble();
+            }
+        }
+        catch
+        {
+        }
+        return null;
+    }
 }

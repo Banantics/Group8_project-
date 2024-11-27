@@ -1,52 +1,51 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.IO;
-using Newtonsoft.Json;
-using System.Text.Json;
+﻿using System;
 
 namespace vals
 {
     public class values
     {
-        // 'end_device_ids'
+        // 'end_device'
         public string DeviceId { get; set; }
-        public string ApplicationId { get; set; }
+        public string Application { get; set; }
         public string DevEUI { get; set; }
         public string JoinEUI { get; set; }
         public string DevAddress { get; set; }
 
-        // 'uplink_message'
+        // 'uplink_messages' 
+        public int MessageId { get; set; } 
         public string SessionKeyId { get; set; }
         public int FPort { get; set; }
         public int FCnt { get; set; }
         public string FrmPayload { get; set; }
-        public double Humidity { get; set; }
-        public double Light { get; set; }
-        public double Pressure { get; set; }
-        public double Temperature { get; set; }
         public DateTime Timestamp { get; set; }
 
-        // 'rx_metadata'
+        //  'mkr_data' and 'lht_data' tables
+        public double? Humidity { get; set; }
+        public double? Pressure { get; set; }
+        public double? Temperature { get; set; }
+
+        // ('lht_data' table)
+        public double? BatteryVoltage { get; set; }
+        public int? BatteryStatus { get; set; }
+        public double? Illumination { get; set; }
+        public string WorkMode { get; set; }
+        public double? TempC_DS { get; set; } 
+        public double? TempC_SHT { get; set; } 
+
+        //  ('mkr_data' table)
+        public double? Light { get; set; } 
+
+        // 'rx_metadata' fields
+        public int MetadataId { get; set; } 
         public string GatewayId { get; set; }
         public string GatewayEUI { get; set; }
         public DateTime MetadataTime { get; set; }
         public long MetadataTimestamp { get; set; }
-        public double RSSI { get; set; }
-        public double ChannelRSSI { get; set; }
-        public double SNR { get; set; }
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
-        public double Altitude { get; set; }
-
-        // 'settings'
-        public int Bandwidth { get; set; }
-        public int SpreadingFactor { get; set; }
-        public string CodingRate { get; set; }
-        public string Frequency { get; set; }
-        public long SettingsTimestamp { get; set; }
+        public double? RSSI { get; set; }
+        public double? ChannelRSSI { get; set; }
+        public double? SNR { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public double? Altitude { get; set; }
     }
 }
-
