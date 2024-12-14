@@ -6,6 +6,7 @@ public class valuegetter
 {
     ///is empty cause im lazy
     private vals.values _weatherData = new vals.values();
+
     public vals.values table(JsonDocument document, string deviceType)
     {
         try
@@ -46,6 +47,9 @@ public class valuegetter
                 Console.WriteLine($"Warning: Illumination is missing or not parsed for device {_weatherData.DeviceId}");
             }
 
+
+            timestamp_correct();
+            
             return  _weatherData;
         }
         catch (Exception ex)
@@ -80,7 +84,22 @@ public class valuegetter
             Latitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "latitude"),
             Longitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "longitude"),
             Altitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "altitude")
+        
+        
+        
         };
+    }
+
+
+    private void timestamp_correct() 
+    {
+       if ( _weatherData.MetadataTimestamp is 0) 
+        {
+            DateTime unixTime= new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            _weatherData.MetadataTimestamp = (long)(_weatherData.MetadataTime.ToUniversalTime() - unixTime).TotalSeconds;
+        }
+       return;
     }
 
     public string TableIdentifier(JsonDocument document)

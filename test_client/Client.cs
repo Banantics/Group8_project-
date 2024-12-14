@@ -19,8 +19,8 @@ namespace Client
         private readonly string _topic;
         private readonly string _username;
         private readonly string _password;
-        private readonly IMqttClient _mqttClient;
-        private readonly MqttClientOptions _options;
+        private IMqttClient _mqttClient;
+        private MqttClientOptions _options;
 
         public MqttClientWrapper()
         {
@@ -31,6 +31,24 @@ namespace Client
             _username = "project-software-engineering@ttn";
             _password = "NNSXS.DTT4HTNBXEQDZ4QYU6SG73Q2OXCERCZ6574RVXI.CQE6IG6FYNJOO2MOFMXZVWZE4GXTCC2YXNQNFDLQL4APZMWU6ZGA";
 
+            make_client();
+        }
+
+        public MqttClientWrapper(string top)
+        {
+            if (top == null || top != "v3/sensor-group8-25@ttn/devices/+/up") return;
+            _broker = "eu1.cloud.thethings.network";
+            _port = 8883;
+            _clientId = Guid.NewGuid().ToString();
+            _topic = top;
+            _username = "sensor-group8-25@ttn";
+            _password = "NNSXS.2LIHEIKN66OERLIUV5M2R3IM52NWOBNG3HBKX3A.ETIF35COU2IUGJYNHG4T3AGTVYR3GM5IWTNRX3NJGC564Y5BX3PA";
+
+            make_client();
+        }
+
+        private void make_client() 
+        {
             var factory = new MqttFactory();
             _mqttClient = factory.CreateMqttClient();
 
@@ -114,7 +132,7 @@ namespace Client
                 Console.WriteLine("Press any key to exit...");
                 Console.ReadKey();
 
-                // Unsubscribe and disconnect when the app exits
+                // disconnect when exiting 
                 await _mqttClient.UnsubscribeAsync(_topic);
                 await _mqttClient.DisconnectAsync();
             }
