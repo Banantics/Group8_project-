@@ -9,7 +9,8 @@ namespace Client
         public void insert(vals.values weatherData)
         {
             //string connectionString = "Server=DESKTOP-BRPSKK1;Database=weather;Trusted_Connection=True;";
-            string connectionString = "Server=Alians;Database=weather;Trusted_Connection=True;";
+            //string connectionString = "Server=Alians;Database=weather;Trusted_Connection=True;";
+            string connectionString = "Server=weathergroup8.database.windows.net;Database=weather8;User Id= Group8;Password=Zxcqwe123!!";
             try
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
@@ -84,7 +85,7 @@ namespace Client
 
         private void device_type(SqlConnection connection, values weatherData)
         {
-            if (weatherData.DeviceId.StartsWith("mkr", StringComparison.OrdinalIgnoreCase))
+            if (weatherData.DeviceId.StartsWith("mkr", StringComparison.OrdinalIgnoreCase)|| weatherData.DeviceId.Equals("projectset-group8-2425") )
             {
                 string insertMkrDataQuery = @"
                     INSERT INTO wet.mkr_data (message_id, humidity, pressure, temperature)

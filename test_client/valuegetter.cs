@@ -31,6 +31,14 @@ public class valuegetter
                 _weatherData.TempC_DS = GetJsonValue(document, "uplink_message", "decoded_payload", "TempC_DS");
                 _weatherData.Illumination = GetJsonValue(document, "uplink_message", "decoded_payload", "ILL_lx");
             }
+            else if (_weatherData.DeviceId =="group8-2425") 
+            {
+                deviceType = "mkr";
+                _weatherData.Temperature = TryGetDouble(document, "uplink_message", "decoded_payload", "temp");
+                _weatherData.Humidity = TryGetDouble(document, "uplink_message", "decoded_payload", "humid");
+                _weatherData.Illumination = TryGetDouble(document, "uplink_message", "decoded_payload", "light");
+                _weatherData.Pressure = TryGetDouble(document, "uplink_message", "decoded_payload", "press");
+            }
             else
             {
                 throw new Exception($"Unknown device type: {deviceType}");
