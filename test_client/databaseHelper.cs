@@ -85,7 +85,7 @@ namespace Client
 
         private void device_type(SqlConnection connection, values weatherData)
         {
-            if (weatherData.DeviceId.StartsWith("mkr", StringComparison.OrdinalIgnoreCase)|| weatherData.DeviceId.Equals("projectset-group8-2425") )
+            if (weatherData.DeviceId.StartsWith("mkr", StringComparison.OrdinalIgnoreCase)|| weatherData.DeviceId.EndsWith("group8-2425", StringComparison.OrdinalIgnoreCase) )
             {
                 string insertMkrDataQuery = @"
                     INSERT INTO wet.mkr_data (message_id, humidity, pressure, temperature)

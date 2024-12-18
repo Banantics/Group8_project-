@@ -31,14 +31,6 @@ public class valuegetter
                 _weatherData.TempC_DS = GetJsonValue(document, "uplink_message", "decoded_payload", "TempC_DS");
                 _weatherData.Illumination = GetJsonValue(document, "uplink_message", "decoded_payload", "ILL_lx");
             }
-            else if (_weatherData.DeviceId =="group8-2425") 
-            {
-                deviceType = "mkr";
-                _weatherData.Temperature = TryGetDouble(document, "uplink_message", "decoded_payload", "temp");
-                _weatherData.Humidity = TryGetDouble(document, "uplink_message", "decoded_payload", "humid");
-                _weatherData.Illumination = TryGetDouble(document, "uplink_message", "decoded_payload", "light");
-                _weatherData.Pressure = TryGetDouble(document, "uplink_message", "decoded_payload", "press");
-            }
             else
             {
                 throw new Exception($"Unknown device type: {deviceType}");
@@ -67,6 +59,16 @@ public class valuegetter
         }
     }
 
+    public vals.values special_table(JsonDocument document)
+    {
+        get_common_values(document);
+        read_group_device(document);
+
+        timestamp_correct();
+
+        return _weatherData;
+    }
+
 
     public void get_common_values(JsonDocument document)
     {
@@ -92,9 +94,6 @@ public class valuegetter
             Latitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "latitude"),
             Longitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "longitude"),
             Altitude = TryGetDouble(document, "uplink_message", "rx_metadata", 0, "location", "altitude")
-        
-        
-        
         };
     }
 
@@ -226,4 +225,38 @@ public class valuegetter
         }
         return null;
     }
+
+
+    private void read_group_device(JsonDocument document)
+    {
+        string payload = TryGetString(document, "uplink_message", "decoded_payload", "payload");
+        var values = payload.Split(',');
+
+        foreach (var pair in values)
+        {
+            var parts = pair.Split(':');
+            parts[0] = parts[0].Trim();
+            switch (parts[0])
+            {
+                case "temp":
+                    _weatherData.Temperature = Convert.ToSingle(parts[1]);
+                    break;
+                case "humid":
+                    _weatherData.Humidity = Convert.ToSingle(parts[1]);
+                    break;
+                case "light":
+                    _weatherData.Illumination = Convert.ToSingle(parts[1]);
+                    break;
+                case "press":
+                    _weatherData.Pressure = Convert.ToSingle(parts[1]);
+                    break;
+                default:
+                    throw new KeyNotFoundException($"Key '{parts[0]}' not found.");
+                    break;
+            };
+        }
+    }
+
 }
+
+

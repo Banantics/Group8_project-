@@ -102,6 +102,9 @@ namespace Client
                         {
                             weatherdata = getter.table(jsonDocument , "lht");
                            
+                        }else if (deviceid.Contains("group8-2425", StringComparison.OrdinalIgnoreCase))
+                        {
+                            weatherdata = getter.special_table(jsonDocument);
                         }
                         else
                         {
