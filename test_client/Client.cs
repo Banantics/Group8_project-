@@ -7,6 +7,7 @@ using MQTTnet.Client;
 using MQTTnet.Protocol;
 using System.Security.Authentication;
 using vals;
+using values;
 
 
 namespace Client
@@ -93,6 +94,7 @@ namespace Client
                         var getter = new valuegetter();
                         var deviceid = getter.TableIdentifier(jsonDocument);
                         vals.values weatherdata = null;
+                        loravalues loraweatherdata = null;
                         if (deviceid.Contains("mkr", StringComparison.OrdinalIgnoreCase))
                         {
                             weatherdata = getter.table(jsonDocument , "mkr");
@@ -104,7 +106,7 @@ namespace Client
                            
                         }else if (deviceid.Contains("group8-2425", StringComparison.OrdinalIgnoreCase))
                         {
-                            weatherdata = getter.special_table(jsonDocument);
+                            loraweatherdata = getter.specifictable(jsonDocument);
                         }
                         else
                         {
@@ -112,11 +114,20 @@ namespace Client
                         }
                        
                         Console.WriteLine(deviceid);
-                        if (weatherdata != null)
+                        var helper = new databaseHelper();
+                       
+                        if (weatherdata != null || loraweatherdata != null)
                         {
                            
-                            var helper = new databaseHelper();
-                            helper.insert(weatherdata);
+                            
+                            if (deviceid.Contains("group8-2425", StringComparison.OrdinalIgnoreCase))
+                            {
+                                helper.InsertIntoSpecificTable(loraweatherdata);
+                            }
+                            else
+                            {
+                                helper.insert(weatherdata);
+                            }
                         }
                         else
                         {
