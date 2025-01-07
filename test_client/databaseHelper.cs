@@ -94,12 +94,12 @@ namespace Client
                                     ? (object)DBNull.Value
                                     : weatherData.WorkMode);
 
-                            command.Parameters.AddWithValue("@Humidity", weatherData.Humidity);
-                            command.Parameters.AddWithValue("@Temperature", weatherData.Temperature);
-                            command.ExecuteNonQuery();
-                        }
-                    }
+                    command.Parameters.AddWithValue("@Humidity", weatherData.Humidity);
+                    command.Parameters.AddWithValue("@Temperature", weatherData.Temperature);
+                    command.ExecuteNonQuery();
                 }
+            }
+        }
 
                 Console.WriteLine("Inserted successfully.");
             }
